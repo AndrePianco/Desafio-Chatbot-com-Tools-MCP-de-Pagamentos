@@ -1,0 +1,23 @@
+[
+  {
+    "id": "usr_001",
+    "username": "rick",
+    "nome": "Rick",
+    "senha_hash": "$2a$10$i9PsSYFWcXWSszfRIfUtaO5Ddg1etwTvQTopLO8PQFGf0vpsXgv4W",
+    "limite": 1500
+  },
+  {
+    "id": "usr_002",
+    "username": "andre",
+    "nome": "Andre",
+    "senha_hash": "$2a$10$W2yULrzjMYBGOhkNTS9aU.j824t222jjKjEbhtnwVo7ricyBmzJFC",
+    "limite": 800
+  },
+  {
+    "id": "usr_003",
+    "username": "ana",
+    "nome": "Ana",
+    "senha_hash": "$2a$10$Z2lNYpcY6GJYqYTWV73lhO7j4qLDYOP5u/MycDntqT62ypnQ.DiZe",
+    "limite": 300
+  }
+]
