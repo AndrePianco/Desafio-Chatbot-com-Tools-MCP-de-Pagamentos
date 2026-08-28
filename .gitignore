@@ -5,3 +5,7 @@ dist/
 audit.log
 .DS_Store
 *.tsbuildinfo
+plano-desafio-mcp.pdf
+.claude/
+
+

@@ -1,55 +1,33 @@
-import type {
-  ChatRequest,
-  ChatResponse,
-  LoginRequest,
-  LoginResponse,
-} from "@desafio/shared";
+import type { ChatResponse, LoginRequest, LoginResponse } from "@desafio/shared";
 
-const CHAVE_TOKEN = "desafio_token";
-const CHAVE_NOME = "desafio_nome";
+/**
+ * Cliente HTTP do backend. DONO: Pessoa C.
+ *
+ * O Vite faz proxy de /api para localhost:3000 (ver vite.config.ts), entao
+ * as chamadas podem usar caminho relativo.
+ *
+ * TODO(Pessoa C): guardar o token do login e mandar em
+ * `Authorization: Bearer <token>` nas chamadas protegidas.
+ */
 
 export function lerToken(): string | null {
-  return localStorage.getItem(CHAVE_TOKEN);
+  throw new Error("TODO(Pessoa C): lerToken");
 }
 
 export function lerNome(): string {
-  return localStorage.getItem(CHAVE_NOME) ?? "";
+  throw new Error("TODO(Pessoa C): lerNome");
 }
 
 export function encerrarSessao(): void {
-  localStorage.removeItem(CHAVE_TOKEN);
-  localStorage.removeItem(CHAVE_NOME);
+  throw new Error("TODO(Pessoa C): encerrarSessao");
 }
 
-async function json<T>(resposta: Response): Promise<T> {
-  if (!resposta.ok) {
-    const corpo = await resposta.json().catch(() => ({ erro: "Falha" }));
-    throw new Error(corpo.erro ?? `HTTP ${resposta.status}`);
-  }
-  return resposta.json() as Promise<T>;
-}
-
+/** POST /api/login -- guarda o token e devolve o usuario. */
 export async function login(corpo: LoginRequest): Promise<LoginResponse> {
-  const resposta = await fetch("/api/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(corpo),
-  });
-  const dados = await json<LoginResponse>(resposta);
-  localStorage.setItem(CHAVE_TOKEN, dados.token);
-  localStorage.setItem(CHAVE_NOME, dados.usuario.nome);
-  return dados;
+  throw new Error("TODO(Pessoa C): login");
 }
 
+/** POST /api/chat -- devolve so as mensagens novas do turno. */
 export async function enviarMensagem(mensagem: string): Promise<ChatResponse> {
-  const corpo: ChatRequest = { mensagem };
-  const resposta = await fetch("/api/chat", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${lerToken()}`,
-    },
-    body: JSON.stringify(corpo),
-  });
-  return json<ChatResponse>(resposta);
+  throw new Error("TODO(Pessoa C): enviarMensagem");
 }

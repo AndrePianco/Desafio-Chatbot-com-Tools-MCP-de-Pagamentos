@@ -1,31 +1,9 @@
-import { useState } from "react";
-import Login from "./Login.js";
-import Chat from "./Chat.js";
-import { encerrarSessao, lerNome, lerToken } from "./api.js";
-
+/**
+ * Raiz do app e guard de rota. DONO: Pessoa C.
+ *
+ * TODO(Pessoa C): sem token, so existe a tela de Login; com token,
+ * renderiza o Chat. Item 1 do checklist do desafio (login obrigatorio).
+ */
 export default function App() {
-  // Guard de rota simples: sem token, so existe a tela de login.
-  const [autenticado, setAutenticado] = useState(() => Boolean(lerToken()));
-  const [nome, setNome] = useState(lerNome);
-
-  if (!autenticado) {
-    return (
-      <Login
-        aoEntrar={(usuario) => {
-          setNome(usuario.nome);
-          setAutenticado(true);
-        }}
-      />
-    );
-  }
-
-  return (
-    <Chat
-      nome={nome}
-      aoSair={() => {
-        encerrarSessao();
-        setAutenticado(false);
-      }}
-    />
-  );
+  return <p>TODO(Pessoa C): App -- guard de rota entre Login e Chat.</p>;
 }

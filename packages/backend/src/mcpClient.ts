@@ -1,38 +1,35 @@
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-
-const MCP_URL = process.env.MCP_URL ?? "http://localhost:3001/mcp";
+import type { Client } from "@modelcontextprotocol/sdk/client/index.js";
 
 /**
- * Um cliente MCP por sessao, carregando o JWT do usuario no header do
- * transporte. E assim que o mcp-server sabe quem esta chamando sem que
- * o modelo participe da decisao.
+ * Cliente MCP por sessao. DONO: Pessoa B.
+ *
+ * O JWT do usuario viaja no header do transporte Streamable HTTP. E assim
+ * que o mcp-server sabe quem esta chamando sem que o modelo participe da
+ * decisao -- ver a decisao de arquitetura em mcp-server/src/index.ts.
+ *
+ * TODO(Pessoa B):
+ *   new StreamableHTTPClientTransport(new URL(process.env.MCP_URL), {
+ *     requestInit: { headers: { Authorization: "Bearer " + userJwt } },
+ *   })
  */
-export async function criarClienteMcp(userJwt: string): Promise<Client> {
-  const transport = new StreamableHTTPClientTransport(new URL(MCP_URL), {
-    requestInit: {
-      headers: { Authorization: `Bearer ${userJwt}` },
-    },
-  });
-  const client = new Client({ name: "desafio-backend", version: "1.0.0" });
-  await client.connect(transport);
-  return client;
+
+/** Formato `tools` que o endpoint compativel com OpenAI espera. */
+export interface ToolOpenAI {
+  type: "function";
+  function: {
+    name: string;
+    description: string;
+    parameters: Record<string, unknown>;
+  };
 }
 
-/** Formato MCP (JSON Schema) -> formato `tools` do OpenAI/Ollama. */
-export async function descobrirTools(client: Client) {
-  const { tools } = await client.listTools();
-  return tools.map((t) => ({
-    type: "function" as const,
-    function: {
-      name: t.name,
-      description: t.description ?? "",
-      parameters: (t.inputSchema ?? {
-        type: "object",
-        properties: {},
-      }) as Record<string, unknown>,
-    },
-  }));
+export async function criarClienteMcp(userJwt: string): Promise<Client> {
+  throw new Error("TODO(Pessoa B): criarClienteMcp");
+}
+
+/** listTools() do MCP -> formato `tools` do OpenAI. Item 2 do checklist. */
+export async function descobrirTools(client: Client): Promise<ToolOpenAI[]> {
+  throw new Error("TODO(Pessoa B): descobrirTools");
 }
 
 /** Executa uma tool e devolve o texto bruto que o modelo vai ler. */
@@ -41,10 +38,5 @@ export async function chamarTool(
   nome: string,
   args: Record<string, unknown>,
 ): Promise<string> {
-  const resposta = await client.callTool({ name: nome, arguments: args });
-  const conteudo = resposta.content as Array<{ type: string; text?: string }>;
-  return conteudo
-    .filter((c) => c.type === "text")
-    .map((c) => c.text ?? "")
-    .join("\n");
+  throw new Error("TODO(Pessoa B): chamarTool");
 }
