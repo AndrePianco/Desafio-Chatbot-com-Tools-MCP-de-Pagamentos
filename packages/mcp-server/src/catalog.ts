@@ -1,14 +1,22 @@
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import type { Produto } from "@desafio/shared";
 
 /**
  * Catalogo de produtos. DONO: Pessoa A.
  *
- * TODO(Pessoa A): carregar data/catalog.seed.json e expor a busca por id.
  * O preco vive aqui e so aqui -- nenhuma tool recebe valor como argumento.
+ * Carregado uma vez quando o servidor liga; reiniciar restaura o seed.
  */
 
-export const catalogo: Produto[] = [];
+/** Caminho a partir DESTE arquivo, nao de onde o processo foi iniciado. */
+const caminho = fileURLToPath(
+  new URL("../../../data/catalog.seed.json", import.meta.url),
+);
 
+export const catalogo: Produto[] = JSON.parse(readFileSync(caminho, "utf8"));
+
+/** Devolve o produto, ou undefined se o id nao existir no catalogo. */
 export function buscarProduto(id: string): Produto | undefined {
-  throw new Error("TODO(Pessoa A): buscarProduto");
+  return catalogo.find((produto) => produto.id === id);
 }
