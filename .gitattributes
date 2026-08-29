@@ -1,0 +1,5 @@
+# Evita guerra de diff entre Windows/macOS/Linux no time.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.pdf binary

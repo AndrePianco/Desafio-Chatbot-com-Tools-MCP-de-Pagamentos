@@ -1,0 +1,27 @@
+{
+  "name": "desafio-mcp",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "workspaces": [
+    "packages/shared",
+    "packages/mcp-server",
+    "packages/backend",
+    "packages/frontend"
+  ],
+  "scripts": {
+    "dev": "concurrently -n mcp,backend,front -c magenta,cyan,green \"npm run dev -w @desafio/mcp-server\" \"npm run dev -w @desafio/backend\" \"npm run dev -w @desafio/frontend\"",
+    "dev:mcp": "npm run dev -w @desafio/mcp-server",
+    "dev:backend": "npm run dev -w @desafio/backend",
+    "dev:frontend": "npm run dev -w @desafio/frontend",
+    "typecheck": "tsc -b packages/shared packages/mcp-server packages/backend packages/frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "typescript": "^5.7.3"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "esbuild@0.25.12": true
+  }
+}

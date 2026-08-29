@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.env
+*.log
+audit.log
+.DS_Store
+*.tsbuildinfo
+plano-desafio-mcp.pdf
+.claude/
+
+

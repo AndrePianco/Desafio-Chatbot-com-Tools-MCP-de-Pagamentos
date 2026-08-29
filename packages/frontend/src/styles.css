@@ -1,0 +1,16 @@
+/*
+ * Estilos do app. DONO: Pessoa C.
+ *
+ * TODO(Pessoa C): estilizar a tela de login e o chat. O chip de tool call
+ * merece destaque -- e o elemento que prova, nos screenshots de entrega,
+ * que as tools MCP rodaram de verdade.
+ */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
