@@ -1,41 +1,51 @@
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import type { NextFunction, Request, Response } from "express";
 import type { JwtPayload, UsuarioSeed } from "@desafio/shared";
 
-/**
- * Login e emissao de JWT. DONO: Pessoa B.
- *
- * TODO(Pessoa B): carregar data/users.seed.json (mesmo arquivo que o
- * mcp-server le) e assinar com o JWT_SECRET compartilhado -- e a mesma
- * chave que o mcp-server usa para validar.
- */
+const caminhoSeed = fileURLToPath(
+  new URL("../../../data/users.seed.json", import.meta.url),
+);
 
-export const usuarios: UsuarioSeed[] = [];
+export const usuarios: UsuarioSeed[] = JSON.parse(readFileSync(caminhoSeed, "utf8"));
 
-/** Confere a senha com bcrypt. Devolve null se usuario ou senha nao baterem. */
-export function autenticarCredenciais(
-  username: string,
-  senha: string,
-): UsuarioSeed | null {
-  throw new Error("TODO(Pessoa B): autenticarCredenciais");
+function segredo(): string {
+  const s = process.env.JWT_SECRET;
+  if (!s) throw new Error("JWT_SECRET ausente — copie .env.example para .env");
+  return s;
 }
 
-/** Assina um JWT com { sub: user_id, nome }. */
+export function autenticarCredenciais(username: string, senha: string): UsuarioSeed | null {
+  const usuario = usuarios.find((u) => u.username === username);
+  if (!usuario) return null;
+  return bcrypt.compareSync(senha, usuario.senha_hash) ? usuario : null;
+}
+
 export function emitirToken(usuario: UsuarioSeed): string {
-  throw new Error("TODO(Pessoa B): emitirToken");
+  const payload: JwtPayload = { sub: usuario.id, nome: usuario.nome };
+  return jwt.sign(payload, segredo(), { expiresIn: "8h" });
 }
 
-/** Anexado a req pelo middleware. */
 export interface RequestAutenticada extends Request {
   usuario?: JwtPayload;
-  /** O JWT cru -- repassado ao MCP server no header do transporte. */
+  /** O JWT cru — repassado ao MCP server no header do transporte (PB-5). */
   token?: string;
 }
 
-/** Middleware: protege /api/chat. Sem token valido -> 401. */
-export function exigirAuth(
-  req: RequestAutenticada,
-  res: Response,
-  next: NextFunction,
-): void {
-  throw new Error("TODO(Pessoa B): exigirAuth");
+export function exigirAuth(req: RequestAutenticada, res: Response, next: NextFunction): void {
+  const header = req.headers.authorization;
+  if (!header?.startsWith("Bearer ")) {
+    res.status(401).json({ erro: "não autenticado" });
+    return;
+  }
+  const token = header.slice("Bearer ".length);
+  try {
+    req.usuario = jwt.verify(token, segredo()) as JwtPayload;
+    req.token = token;
+    next();
+  } catch {
+    res.status(401).json({ erro: "token inválido ou expirado" });
+  }
 }
