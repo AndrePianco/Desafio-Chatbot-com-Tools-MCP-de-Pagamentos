@@ -7,5 +7,7 @@ audit.log
 *.tsbuildinfo
 plano-desafio-mcp.pdf
 .claude/
+HANDOFF.md
+
 
 
