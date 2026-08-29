@@ -46,6 +46,8 @@ function paraOpenAI(historico: ChatMessage[]): OpenAI.ChatCompletionMessageParam
   });
 }
 
+const MAX_ITERACOES = Number(process.env.MAX_ITERACOES_AGENTE ?? 5);
+
 export async function responder(
   sessao: Sessao,
   mcp: Client,
@@ -55,47 +57,56 @@ export async function responder(
   const novas: ChatMessage[] = [];
   const tools = await descobrirTools(mcp);
 
-  const messages: OpenAI.ChatCompletionMessageParam[] = [
-    { role: "system", content: SYSTEM_PROMPT },
-    ...paraOpenAI(sessao.historico),
-  ];
+  for (let i = 0; i < MAX_ITERACOES; i++) {
+    const messages: OpenAI.ChatCompletionMessageParam[] = [
+      { role: "system", content: SYSTEM_PROMPT },
+      ...paraOpenAI(sessao.historico),
+    ];
 
-  const completion = await openai.chat.completions.create({ model: MODELO, messages, tools });
-  const msg = completion.choices[0]?.message;
-  if (!msg) return novas;
+    const completion = await openai.chat.completions.create({ model: MODELO, messages, tools });
+    const msg = completion.choices[0]?.message;
+    if (!msg) break;
 
-  if (!msg.tool_calls?.length) {
-    const resposta: ChatMessage = { role: "assistant", content: msg.content ?? "" };
-    sessao.historico.push(resposta);
-    novas.push(resposta);
-    return novas;
+    if (!msg.tool_calls?.length) {
+      const resposta: ChatMessage = { role: "assistant", content: msg.content ?? "" };
+      sessao.historico.push(resposta);
+      novas.push(resposta);
+      return novas;
+    }
+
+    const toolCalls: ToolCall[] = msg.tool_calls.map((tc) => {
+      let argumentos: Record<string, unknown> = {};
+      try {
+        argumentos = JSON.parse(tc.function.arguments || "{}");
+      } catch {
+        argumentos = {};
+      }
+      return { id: tc.id, nome: tc.function.name, argumentos };
+    });
+
+    const assistantMsg: ChatMessage = { role: "assistant", content: msg.content ?? "", tool_calls: toolCalls };
+    sessao.historico.push(assistantMsg);
+    novas.push(assistantMsg);
+
+    for (const tc of toolCalls) {
+      let resultadoTexto: string;
+      try {
+        resultadoTexto = await chamarTool(mcp, tc.nome, tc.argumentos);
+      } catch (e) {
+        resultadoTexto = JSON.stringify({ erro: "FALHA_TOOL", mensagem: (e as Error).message });
+      }
+      const toolMsg: ChatMessage = { role: "tool", content: resultadoTexto, tool_call_id: tc.id };
+      sessao.historico.push(toolMsg);
+      novas.push(toolMsg);
+    }
+    // volta ao topo: o modelo vê os resultados das tools e decide o próximo passo
   }
 
-  const toolCalls: ToolCall[] = msg.tool_calls.map((tc) => {
-    let argumentos: Record<string, unknown> = {};
-    try {
-      argumentos = JSON.parse(tc.function.arguments || "{}");
-    } catch {
-      argumentos = {};
-    }
-    return { id: tc.id, nome: tc.function.name, argumentos };
-  });
-
-  const assistantMsg: ChatMessage = { role: "assistant", content: msg.content ?? "", tool_calls: toolCalls };
-  sessao.historico.push(assistantMsg);
-  novas.push(assistantMsg);
-
-  for (const tc of toolCalls) {
-    let resultadoTexto: string;
-    try {
-      resultadoTexto = await chamarTool(mcp, tc.nome, tc.argumentos);
-    } catch (e) {
-      resultadoTexto = JSON.stringify({ erro: "FALHA_TOOL", mensagem: (e as Error).message });
-    }
-    const toolMsg: ChatMessage = { role: "tool", content: resultadoTexto, tool_call_id: tc.id };
-    sessao.historico.push(toolMsg);
-    novas.push(toolMsg);
-  }
-
-  return novas; // resposta final do modelo em cima do resultado vem em PB-4.3, com o loop de verdade
+  const fallback: ChatMessage = {
+    role: "assistant",
+    content: "Não consegui concluir a operação em tempo hábil. Pode tentar reformular o pedido?",
+  };
+  sessao.historico.push(fallback);
+  novas.push(fallback);
+  return novas;
 }
