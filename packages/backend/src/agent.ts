@@ -1,7 +1,8 @@
 import OpenAI from "openai";
 import type { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import type { ChatMessage } from "@desafio/shared";
+import type { ChatMessage, ToolCall } from "@desafio/shared";
 import type { Sessao } from "./sessions.js";
+import { chamarTool, descobrirTools } from "./mcpClient.js";
 
 const openai = new OpenAI({
   baseURL: process.env.OLLAMA_BASE_URL ?? "http://localhost:11434/v1",
@@ -27,6 +28,20 @@ Nunca invente um intencao_id, um preço ou um valor de limite. Se uma ferramenta
 
 function paraOpenAI(historico: ChatMessage[]): OpenAI.ChatCompletionMessageParam[] {
   return historico.map((m): OpenAI.ChatCompletionMessageParam => {
+    if (m.role === "tool") {
+      return { role: "tool", content: m.content, tool_call_id: m.tool_call_id! };
+    }
+    if (m.role === "assistant" && m.tool_calls?.length) {
+      return {
+        role: "assistant",
+        content: m.content || null,
+        tool_calls: m.tool_calls.map((tc) => ({
+          id: tc.id,
+          type: "function",
+          function: { name: tc.nome, arguments: JSON.stringify(tc.argumentos) },
+        })),
+      };
+    }
     return { role: m.role as "user" | "assistant" | "system", content: m.content };
   });
 }
@@ -37,16 +52,50 @@ export async function responder(
   mensagem: string,
 ): Promise<ChatMessage[]> {
   sessao.historico.push({ role: "user", content: mensagem });
+  const novas: ChatMessage[] = [];
+  const tools = await descobrirTools(mcp);
 
   const messages: OpenAI.ChatCompletionMessageParam[] = [
     { role: "system", content: SYSTEM_PROMPT },
     ...paraOpenAI(sessao.historico),
   ];
 
-  const completion = await openai.chat.completions.create({ model: MODELO, messages });
+  const completion = await openai.chat.completions.create({ model: MODELO, messages, tools });
   const msg = completion.choices[0]?.message;
+  if (!msg) return novas;
 
-  const resposta: ChatMessage = { role: "assistant", content: msg?.content ?? "" };
-  sessao.historico.push(resposta);
-  return [resposta];
+  if (!msg.tool_calls?.length) {
+    const resposta: ChatMessage = { role: "assistant", content: msg.content ?? "" };
+    sessao.historico.push(resposta);
+    novas.push(resposta);
+    return novas;
+  }
+
+  const toolCalls: ToolCall[] = msg.tool_calls.map((tc) => {
+    let argumentos: Record<string, unknown> = {};
+    try {
+      argumentos = JSON.parse(tc.function.arguments || "{}");
+    } catch {
+      argumentos = {};
+    }
+    return { id: tc.id, nome: tc.function.name, argumentos };
+  });
+
+  const assistantMsg: ChatMessage = { role: "assistant", content: msg.content ?? "", tool_calls: toolCalls };
+  sessao.historico.push(assistantMsg);
+  novas.push(assistantMsg);
+
+  for (const tc of toolCalls) {
+    let resultadoTexto: string;
+    try {
+      resultadoTexto = await chamarTool(mcp, tc.nome, tc.argumentos);
+    } catch (e) {
+      resultadoTexto = JSON.stringify({ erro: "FALHA_TOOL", mensagem: (e as Error).message });
+    }
+    const toolMsg: ChatMessage = { role: "tool", content: resultadoTexto, tool_call_id: tc.id };
+    sessao.historico.push(toolMsg);
+    novas.push(toolMsg);
+  }
+
+  return novas; // resposta final do modelo em cima do resultado vem em PB-4.3, com o loop de verdade
 }
