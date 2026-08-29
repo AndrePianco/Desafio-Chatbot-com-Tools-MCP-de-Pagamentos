@@ -1,9 +1,29 @@
-/**
- * Raiz do app e guard de rota. DONO: Pessoa C.
- *
- * TODO(Pessoa C): sem token, so existe a tela de Login; com token,
- * renderiza o Chat. Item 1 do checklist do desafio (login obrigatorio).
- */
+import { useState } from "react";
+import Login from "./Login.js";
+import Chat  from "./Chat.js";
+import { lerToken, lerNome, encerrarSessao } from "./api.js";
+
 export default function App() {
-  return <p>TODO(Pessoa C): App -- guard de rota entre Login e Chat.</p>;
+  const [usuario, setUsuario] = useState<{ id: string; nome: string } | null>(() => {
+    const token = lerToken();
+    const nome  = lerNome();
+    return token && nome ? { id: "", nome } : null;
+  });
+
+  function aoSair() {
+    encerrarSessao();
+    setUsuario(null);
+  }
+
+  return (
+    <>
+      <div className="app-bg" aria-hidden="true" />
+      <div className="app-root">
+        {usuario
+          ? <Chat nome={usuario.nome} aoSair={aoSair} />
+          : <Login aoEntrar={setUsuario} />
+        }
+      </div>
+    </>
+  );
 }
