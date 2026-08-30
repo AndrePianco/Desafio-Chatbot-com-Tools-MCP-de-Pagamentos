@@ -3,42 +3,54 @@
     "id": "prod_001",
     "nome": "Fone Bluetooth Aurora",
     "descricao": "Fone over-ear com cancelamento de ruido, 30h de bateria.",
+    "categoria": "audio",
     "preco": 249.9,
+    "moeda": "BRL",
     "estoque": 12
   },
   {
     "id": "prod_002",
     "nome": "Teclado Mecanico Kappa 75%",
     "descricao": "Switches lineares, hot-swap, layout ABNT2.",
+    "categoria": "perifericos",
     "preco": 419.0,
+    "moeda": "BRL",
     "estoque": 7
   },
   {
     "id": "prod_003",
     "nome": "Mouse Vertical Ergo",
     "descricao": "Mouse vertical sem fio, 4000 DPI.",
+    "categoria": "perifericos",
     "preco": 189.5,
+    "moeda": "BRL",
     "estoque": 20
   },
   {
     "id": "prod_004",
     "nome": "Monitor 27\" QHD 144Hz",
     "descricao": "Painel IPS 2560x1440, 144Hz, HDR10.",
+    "categoria": "monitores",
     "preco": 1899.0,
+    "moeda": "BRL",
     "estoque": 3
   },
   {
     "id": "prod_005",
     "nome": "Webcam Studio 1080p",
     "descricao": "Webcam Full HD 60fps com microfone estereo.",
+    "categoria": "video",
     "preco": 329.9,
+    "moeda": "BRL",
     "estoque": 15
   },
   {
     "id": "prod_006",
     "nome": "Cadeira Ergonomica Lumen",
     "descricao": "Apoio lombar ajustavel, encosto em tela.",
+    "categoria": "mobiliario",
     "preco": 1290.0,
+    "moeda": "BRL",
     "estoque": 5
   }
 ]

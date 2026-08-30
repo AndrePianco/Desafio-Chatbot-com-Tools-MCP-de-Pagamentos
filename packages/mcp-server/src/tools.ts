@@ -8,7 +8,7 @@ import type {
   MetodoPagamento,
   ResultadoCompra,
 } from "@desafio/shared";
-import { catalogo, buscarProduto } from "./catalog.js";
+import { catalogo, buscarProduto, debitarEstoque } from "./catalog.js";
 import { auditar } from "./audit.js";
 import {
   buscarIntencao,
@@ -61,12 +61,22 @@ export function registrarTools(server: McpServer, userId: string): void {
       // Esta descricao NAO e comentario: e o texto que o modelo le para
       // decidir se chama esta tool. Descricao ruim = tool errada.
       description:
-        "Lista os produtos disponiveis para compra, com id, nome, descricao, preco em BRL e estoque. Use sempre antes de registrar_intencao, para obter o produto_id correto.",
-      inputSchema: {},
+        "Lista os produtos disponiveis para compra, com id, nome, categoria, descricao, preco em BRL e estoque. Aceita filtro opcional por categoria. Use sempre antes de registrar_intencao, para obter o produto_id correto.",
+      inputSchema: {
+        categoria: z
+          .string()
+          .optional()
+          .describe(
+            "filtro opcional: devolve so produtos dessa categoria. Omita para listar todos.",
+          ),
+      },
     },
-    async () => {
-      const resultado = { produtos: catalogo };
-      auditar({ user_id: userId, tool: "listar_catalogo", args: {}, resultado });
+    async (args) => {
+      const produtos = args.categoria
+        ? catalogo.filter((p) => p.categoria === args.categoria)
+        : catalogo;
+      const resultado = { produtos };
+      auditar({ user_id: userId, tool: "listar_catalogo", args, resultado });
       return texto(resultado);
     },
   );
@@ -133,6 +143,7 @@ export function registrarTools(server: McpServer, userId: string): void {
         // Calculado aqui: o modelo nao tem por onde injetar um valor.
         // toFixed(2) evita as sobras de ponto flutuante (0.1+0.2).
         valor_total: Number((produto.preco * args.quantidade).toFixed(2)),
+        moeda: produto.moeda,
         status: "pendente",
         criada_em: agora.toISOString(),
         expira_em: new Date(
@@ -223,18 +234,20 @@ export function registrarTools(server: McpServer, userId: string): void {
       else {
         const metodo = args.metodo_pagamento as MetodoPagamento;
         const limiteRestante = debitar(userId, intencao.valor_total);
+        debitarEstoque(intencao.produto_id, intencao.quantidade);
 
         intencao.status = "pago";
         salvarIntencao(intencao);
 
         const transacaoId = idAleatorio("tx");
+        const agora = new Date().toISOString();
         salvarTransacao({
           transacao_id: transacaoId,
           intencao_id: intencao.intencao_id,
           user_id: userId,
           valor: intencao.valor_total,
           metodo_pagamento: metodo,
-          criada_em: new Date().toISOString(),
+          criada_em: agora,
         });
 
         resultado = {
@@ -246,6 +259,7 @@ export function registrarTools(server: McpServer, userId: string): void {
           valor_debitado: intencao.valor_total,
           metodo_pagamento: metodo,
           limite_restante: limiteRestante,
+          criada_em: agora, // ISO 8601 -- exigido pelo enunciado oficial
         };
       }
 
