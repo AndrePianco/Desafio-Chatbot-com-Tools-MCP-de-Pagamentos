@@ -17,7 +17,10 @@ export interface Produto {
   id: string;
   nome: string;
   descricao: string;
+  categoria: string;
   preco: number;
+  /** Sempre "BRL" neste desafio -- exigido pelo enunciado oficial. */
+  moeda: string;
   estoque: number;
 }
 
@@ -32,6 +35,7 @@ export interface Intencao {
   quantidade: number;
   /** Calculado no servidor: preco * quantidade. O modelo nao informa valor. */
   valor_total: number;
+  moeda: string;
   status: StatusIntencao;
   /** ISO 8601 */
   criada_em: string;
@@ -56,6 +60,8 @@ export interface CompraAprovada {
   valor_debitado: number;
   metodo_pagamento: MetodoPagamento;
   limite_restante: number;
+  /** ISO 8601 -- exigido pelo enunciado oficial no retorno de sucesso. */
+  criada_em: string;
 }
 
 export interface CompraRecusada {
@@ -86,7 +92,10 @@ export interface Transacao {
  * O modelo nao tem como forjar identidade nem preco.
  */
 
-export type ListarCatalogoArgs = Record<string, never>;
+export interface ListarCatalogoArgs {
+  /** Filtro opcional pela categoria do produto. */
+  categoria?: string;
+}
 
 export interface RegistrarIntencaoArgs {
   produto_id: string;
