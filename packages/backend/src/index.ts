@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "./env.js";
 import cors from "cors";
 import express from "express";
 import type { ChatRequest, ChatResponse, LoginRequest, LoginResponse } from "@desafio/shared";
