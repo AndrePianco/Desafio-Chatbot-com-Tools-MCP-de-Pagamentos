@@ -1,7 +1,7 @@
 # Integrantes
 - André Felipe Nunes Silva Barbosa Piancó
 - Everton dos Santos Azevedo
-- 
+- Henrick de Oliveira Ferreira
 
 # Chatbot com Tools MCP de Pagamentos
 
