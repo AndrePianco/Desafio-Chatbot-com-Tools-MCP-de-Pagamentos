@@ -1,3 +1,8 @@
+# Integrantes
+- 
+- Everton dos Santos Azevedo
+- 
+
 # Chatbot com Tools MCP de Pagamentos
 
 App local (frontend + backend + servidor MCP) onde um LLM conversa com o usuario
