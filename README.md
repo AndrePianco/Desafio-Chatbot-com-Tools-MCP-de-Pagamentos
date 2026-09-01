@@ -9,13 +9,26 @@ modelo nao consegue forjar `intencao_id`, alterar preco nem furar o limite de ga
 ## Como rodar
 
 ```bash
+# Linux / macOS
 cp .env.example .env
-npm install
-ollama pull qwen2.5:7b
-npm run dev               # mcp-server :3001, backend :3000, frontend :5173
+
+# Windows (PowerShell)
+copy .env.example .env
 ```
 
-Usuarios do seed em `data/users.seed.json`.
+```bash
+npm install
+ollama pull qwen2.5:7b
+npm run dev    # inicia: mcp-server :3001 | backend :3000 | frontend :5173
+```
+
+### Usuários de teste
+
+| Usuário | Senha      | Limite    |
+| ------- | ---------- | --------- |
+| rick    | senha123   | R$ 1.500  |
+| andre   | senha123   | R$ 800    |
+| ana     | senha123   | R$ 300    |
 
 ## Arquitetura
 

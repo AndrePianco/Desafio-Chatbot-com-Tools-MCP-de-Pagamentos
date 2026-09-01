@@ -89,21 +89,7 @@ export default function Login({ aoEntrar }: Props) {
           </button>
         </form>
 
-        <div className="login-hint" aria-label="Contas de teste disponíveis">
-          <p className="login-hint-title">Contas de teste</p>
-          {[
-            { user: "rick",  senha: "rick123",  limite: "R$ 1.500" },
-            { user: "andre", senha: "andre123", limite: "R$ 800" },
-            { user: "ana",   senha: "ana123",   limite: "R$ 300" },
-          ].map(u => (
-            <div className="login-hint-row" key={u.user}>
-              <span>
-                <code>{u.user}</code> / <code>{u.senha}</code>
-              </span>
-              <span className="login-hint-badge">Limite {u.limite}</span>
-            </div>
-          ))}
-        </div>
+
       </main>
     </div>
   );

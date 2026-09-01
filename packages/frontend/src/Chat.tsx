@@ -71,7 +71,6 @@ export default function Chat({ nome, aoSair }: Props) {
       <div ref={listRef} className="chat-messages" role="log" aria-label="Conversa" aria-live="polite">
         {visiveis.length === 0 && !aguardando && (
           <div className="chat-empty">
-            <div className="chat-empty-icon">🛍️</div>
             <h2>Olá, {nome}!</h2>
             <p>Pergunte o que temos à venda ou diga o que quer comprar.</p>
           </div>
